@@ -1,0 +1,36 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "env": {
+    "LIVEKIT_URL": "@livekit_url",
+    "LIVEKIT_API_KEY": "@livekit_api_key", 
+    "LIVEKIT_API_SECRET": "@livekit_api_secret",
+    "NEXT_PUBLIC_LIVEKIT_URL": "@livekit_url"
+  },
+  "functions": {
+    "src/app/api/**": {
+      "runtime": "nodejs18.x"
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options", 
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}
