@@ -142,7 +142,10 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
       });
 
       // Connect to the room
-      const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL || 'wss://aoc-uwtcwbzg.livekit.cloud';
+      const livekitUrl = process.env.NEXT_PUBLIC_LIVEKIT_URL;
+      if (!livekitUrl) {
+        throw new Error('NEXT_PUBLIC_LIVEKIT_URL environment variable is not set');
+      }
       console.log('Connecting to LiveKit URL:', livekitUrl);
       await newRoom.connect(livekitUrl, token);
 
