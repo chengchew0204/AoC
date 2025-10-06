@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "18"
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_LIVEKIT_URL"
+  SECRETS_SCAN_OMIT_PATHS = ".netlify/,.next/,setup-env.sh,update-env.sh"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
