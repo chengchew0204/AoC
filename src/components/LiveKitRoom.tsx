@@ -23,6 +23,7 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
   const [isConnected, setIsConnected] = useState(false);
   const [isBroadcasting, setIsBroadcasting] = useState(false);
   const [remoteVideoTrack, setRemoteVideoTrack] = useState<RemoteTrack | null>(null);
+  const [remoteAudioTrack, setRemoteAudioTrack] = useState<RemoteTrack | null>(null);
   const [connectionState, setConnectionState] = useState<ConnectionState>(ConnectionState.Disconnected);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,6 +93,7 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
         setIsBroadcasting(false);
         setConnectionState(ConnectionState.Disconnected);
         setRemoteVideoTrack(null);
+        setRemoteAudioTrack(null);
         // Only call onDisconnected for intentional disconnects, not connection errors
         // reason is DisconnectReason enum, not string
         onDisconnected?.();
@@ -101,6 +103,8 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
         console.log('Track subscribed:', track.kind, 'from', participant.identity);
         if (track.kind === Track.Kind.Video) {
           setRemoteVideoTrack(track);
+        } else if (track.kind === Track.Kind.Audio) {
+          setRemoteAudioTrack(track);
         }
       });
 
@@ -108,14 +112,17 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
         console.log('Track unsubscribed:', track.kind, 'from', participant.identity);
         if (track.kind === Track.Kind.Video) {
           setRemoteVideoTrack(null);
+        } else if (track.kind === Track.Kind.Audio) {
+          setRemoteAudioTrack(null);
         }
       });
 
       newRoom.on(RoomEvent.ParticipantDisconnected, (participant: RemoteParticipant) => {
         console.log('Participant disconnected:', participant.identity);
-        // If the broadcaster disconnected, clear the video
+        // If the broadcaster disconnected, clear the video and audio
         if (participant.identity !== identity) {
           setRemoteVideoTrack(null);
+          setRemoteAudioTrack(null);
         }
       });
 
@@ -307,6 +314,17 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
     }
   }, [remoteVideoTrack]);
 
+  // Attach audio track to element when available
+  useEffect(() => {
+    const audioElement = document.getElementById('remote-audio') as HTMLAudioElement;
+    if (audioElement && remoteAudioTrack) {
+      remoteAudioTrack.attach(audioElement);
+      return () => {
+        remoteAudioTrack.detach();
+      };
+    }
+  }, [remoteAudioTrack]);
+
   // Attach local video track when broadcasting
   useEffect(() => {
     const localVideoElement = document.getElementById('local-video') as HTMLVideoElement;
@@ -323,6 +341,13 @@ export default function LiveKitRoom({ roomName, identity, onDisconnected }: Live
 
   return (
     <div className="w-full h-screen bg-black relative">
+      {/* Audio element for remote audio track */}
+      <audio
+        id="remote-audio"
+        autoPlay
+        playsInline
+      />
+      
       {/* Video Container */}
       <div className="video-container">
         {/* Remote Video (when someone else is broadcasting) */}
